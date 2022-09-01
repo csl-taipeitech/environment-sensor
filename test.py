@@ -16,7 +16,7 @@ import urequests as requests
 from secrets import secrets
 
 i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=100000)
-URL = "http://XX.XX.XX.XX:5000"
+URL = "http://termite.csltaipeitech.com:5000"
 SLEEP_SECOND = 5
 
 print("==================================================")
