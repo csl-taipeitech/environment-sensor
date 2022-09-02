@@ -18,6 +18,7 @@ from secrets import secrets
 i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=100000)
 URL = "http://termite.csltaipeitech.com:5000"
 SLEEP_SECOND = 5
+ONLINE = True
 
 print("==================================================")
 print("this is Environment Sensor test program...")
@@ -113,12 +114,13 @@ try:
         headers = {
             'Content-Type': 'application/json'
         }
-        try:
-            response = requests.request(
-                "POST", URL, headers=headers, data=payload)
-            print(response.text)
-        except:
-            print("try again")
+        if ONLINE:
+            try:
+                response = requests.request(
+                    "POST", URL, headers=headers, data=payload)
+                print(response.text)
+            except:
+                print("try again")
 
         print("==================================================")
         print("pressure : %7.2f hPa" % pressure)
