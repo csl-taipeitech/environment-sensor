@@ -17,7 +17,7 @@ from secrets import secrets
 
 i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=100000)
 URL = "http://termite.csltaipeitech.com:5000"
-SLEEP_SECOND = 5
+SLEEP_SECOND = 1
 ONLINE = True
 
 print("==================================================")
@@ -80,6 +80,7 @@ try:
     while True:
         time.sleep(SLEEP_SECOND)
         localtime = time.localtime()
+        timestamp = time.time()
 
         bme = []
         bme = bme280.readData()
@@ -91,14 +92,14 @@ try:
 
         uvs = uv.UVS()
 
-        gas = round(sgp.raw(), 2)
+        gas = round(sgp.measureRaw(temp, hum), 2)
 
         icm = []
         icm = mpu.ReadAll()
 
         sensors_dict = {}
         sensors_dict['mac'] = mac
-        sensors_dict['time'] = f"{localtime[0]}/{localtime[1]}/{localtime[2]} {localtime[3]}:{localtime[4]}:{localtime[5]}"
+        sensors_dict['localtime'] = timestamp
         sensors_dict['pressure'] = pressure
         sensors_dict['temp'] = temp
         sensors_dict['hum'] = hum
@@ -124,17 +125,23 @@ try:
 
         print("==================================================")
         print("pressure : %7.2f hPa" % pressure)
-        print("temp : %-6.2f ℃" % temp)
+        print("temp : %-6.2f °C" % temp)
         print("hum : %6.2f ％" % hum)
         print("lux : %d " % lux)
         print("uv : %d " % uvs)
         print("gas : %6.2f " % gas)
-        print("Acceleration: X = %d, Y = %d, Z = %d" %
-              (icm[0], icm[1], icm[2]))
-        print("Gyroscope:     X = %d , Y = %d , Z = %d" %
-              (icm[3], icm[4], icm[5]))
-        print("Magnetic:      X = %d , Y = %d , Z = %d" %
-              (icm[6], icm[7], icm[8]))
+        print("Acceleration: X = %.2f, Y = %.2f, Z = %.2f m/s2" %
+              (icm[0] * 9.81 / 16384,
+               icm[1] * 9.81 / 16384,
+               icm[2] * 9.81 / 16384))
+        print("Gyroscope:     X = %.2f , Y = %.2f , Z = %.2f °/sec" %
+              (icm[3] / 131,
+               icm[4] / 131,
+               icm[5] / 131))
+        print("Magnetic:      X = %.2f , Y = %.2f , Z = %.2f µT" %
+              (icm[6] / 1000,
+               icm[7] / 1000,
+               icm[8] / 1000))
 
 except KeyboardInterrupt:
     exit()
