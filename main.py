@@ -19,6 +19,48 @@ i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=100000)
 URL = "http://termite.csltaipeitech.com:5000"
 SLEEP_SECOND = 1
 ONLINE = True
+RECORD = True
+
+
+def connect_wifi():
+    wlan.connect(ssid, pw)
+    # Listen for connections
+
+    timeout = 10
+    while timeout > 0:
+        if wlan.status() < 0 or wlan.status() >= 3:
+            break
+        timeout -= 1
+        print('Waiting for connection...')
+        time.sleep(1)
+
+
+def send_to_server(payload):
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request(
+            "POST", URL, headers=headers, data=payload, timeout=3)
+        print(response.text)
+    except Exception as e:
+        print(e)
+        print("try again...")
+
+    # path = 'output.txt'
+    # f = open(path, 'a')
+    # f.write(payload)
+    # f.write('\n')
+    # f.close()
+
+
+def write_file(payload):
+    path = 'output.txt'
+    f = open(path, 'a')
+    f.write(payload)
+    f.write('\n')
+    f.close()
+
 
 print("==================================================")
 print("this is Environment Sensor test program...")
@@ -65,16 +107,8 @@ print('mac = ' + mac)
 ssid = secrets['ssid']
 pw = secrets['pw']
 
-wlan.connect(ssid, pw)
-# Listen for connections
-
-timeout = 10
-while timeout > 0:
-    if wlan.status() < 0 or wlan.status() >= 3:
-        break
-    timeout -= 1
-    print('Waiting for connection...')
-    time.sleep(1)
+if ONLINE:
+    connect_wifi()
 
 try:
     while True:
@@ -112,16 +146,11 @@ try:
 
         payload = json.dumps(sensors_dict)
 
-        headers = {
-            'Content-Type': 'application/json'
-        }
         if ONLINE:
-            try:
-                response = requests.request(
-                    "POST", URL, headers=headers, data=payload)
-                print(response.text)
-            except:
-                print("try again")
+            send_to_server(payload)
+
+        if RECORD:
+            write_file(payload)
 
         print("==================================================")
         print("pressure : %7.2f hPa" % pressure)
